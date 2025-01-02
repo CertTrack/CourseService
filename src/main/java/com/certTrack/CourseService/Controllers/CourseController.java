@@ -20,9 +20,12 @@ import com.certTrack.CourseService.Service.CourseService;
 @RequestMapping("/courses")
 public class CourseController {
 
-    @Autowired
-    private CourseService courseService;
+    private final CourseService courseService;
 
+    public CourseController(CourseService courseService) {
+    	this.courseService=courseService;
+    }
+    
     @GetMapping("/id/{id}")
     public CourseDTO getCoursesByName(@PathVariable int id) {
     	return courseService.getCourseById(id);

@@ -15,11 +15,13 @@ import com.certTrack.CourseService.Repository.CourseRepository;
 @Service
 public class CourseService {
 
-    @Autowired
-    private CourseRepository courseRepository;
+    private final CourseRepository courseRepository;
+    private final CategoryRepository categoryRepository;
     
-    @Autowired
-    private CategoryRepository categoryRepository;
+    public CourseService(CourseRepository courseRepository, CategoryRepository categoryRepository) {
+    	this.courseRepository=courseRepository;
+    	this.categoryRepository=categoryRepository;
+    }
     
     public List<CourseDTO> getCourses() {
         List<Course> courses = courseRepository.findAll();
@@ -28,14 +30,15 @@ public class CourseService {
                         course.getId(),
                         course.getName(),
                         course.getDescription(),
-                        course.getCategory().getName()/*,
+                        course.getCategory().getName(),
+                        course.getModule()/*,
                         course.getCreatorId()*/
                 ))
                 .collect(Collectors.toList());
     }
     public CourseDTO getCourseById(int id) {
     	Course course = courseRepository.findById(id).get();
-    	return new CourseDTO(course.getId(), course.getName(), course.getDescription(), course.getCategory().getName());
+    	return new CourseDTO(course.getId(), course.getName(), course.getDescription(), course.getCategory().getName(), course.getModule());
     }
     
     public List<CourseDTO> getCoursesByName(String name) {
@@ -45,7 +48,8 @@ public class CourseService {
                         course.getId(),
                         course.getName(),
                         course.getDescription(),
-                        course.getCategory().getName()/*,
+                        course.getCategory().getName(),
+                        course.getModule()/*,
                         course.getCreatorId()*/
                 ))
                 .collect(Collectors.toList());
@@ -58,7 +62,8 @@ public class CourseService {
                         course.getId(),
                         course.getName(),
                         course.getDescription(),
-                        course.getCategory().getName()/*,
+                        course.getCategory().getName(),
+                        course.getModule()/*,
                         course.getCreatorId()*/
                 ))
                 .collect(Collectors.toList());
@@ -69,7 +74,7 @@ public class CourseService {
             category = new Category(dto.getCategory());
             categoryRepository.save(category);
         }
-        Course course = new Course(dto.getName(), dto.getDescription(), category);
+        Course course = new Course(dto.getName(), dto.getDescription(), category, dto.getModule());
         courseRepository.save(course);
     }
     

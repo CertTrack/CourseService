@@ -5,11 +5,18 @@ public class CourseDTO {
 	private String name;
 	private String description;
 	private String category;
+	private int module;
 	public int getId() {
 		return id;
 	}
 	public void setId(int id) {
 		this.id = id;
+	}
+	public int getModule() {
+		return module;
+	}
+	public void setModule(int module) {
+		this.module = module;
 	}
 	public String getName() {
 		return name;
@@ -29,12 +36,13 @@ public class CourseDTO {
 	public void setCategory(String category) {
 		this.category = category;
 	}
-	public CourseDTO(int id, String name, String description, String category) {
+	public CourseDTO(int id, String name, String description, String category, int module) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.description = description;
 		this.category = category;
+		this.module=module;
 	}
 	public CourseDTO() {
 		super();

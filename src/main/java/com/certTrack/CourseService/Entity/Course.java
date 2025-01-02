@@ -21,11 +21,21 @@ public class Course {
 	private String description;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
-    private Category category;	public int getId() {
+    private Category category;	
+    private int module;
+    
+    
+    public int getId() {
 		return id;
 	}
 	public void setId(int id) {
 		this.id = id;
+	}
+	public int getModule() {
+		return module;
+	}
+	public void setModule(int module) {
+		this.module = module;
 	}
 	public String getName() {
 		return name;
@@ -46,10 +56,11 @@ public class Course {
 		this.category = category;
 	}
 
-	public Course(String name, String description, Category category) {
+	public Course(String name, String description, Category category, int modules) {
 		this.name = name;
 		this.description = description;
 		this.category = category;
+		this.module=modules;
 	}
 	public Course() {
 	}
