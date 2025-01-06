@@ -24,22 +24,29 @@ public class CourseService {
     }
     
     public List<CourseDTO> getCourses() {
-        List<Course> courses = courseRepository.findAll();
+        List<Course> courses = courseRepository.findAllWithCategories();
         return courses.stream()
                 .map(course -> new CourseDTO(
                         course.getId(),
                         course.getName(),
                         course.getDescription(),
                         course.getCategory().getName(),
-                        course.getModule()/*,
-                        course.getCreatorId()*/
+                        course.getModule()
                 ))
                 .collect(Collectors.toList());
     }
+
     public CourseDTO getCourseById(int id) {
-    	Course course = courseRepository.findById(id).get();
-    	return new CourseDTO(course.getId(), course.getName(), course.getDescription(), course.getCategory().getName(), course.getModule());
+        Course course = courseRepository.findByIdWithCategory(id);
+        return new CourseDTO(
+            course.getId(),
+            course.getName(),
+            course.getDescription(),
+            course.getCategory().getName(),
+            course.getModule()
+        );
     }
+
     
     public List<CourseDTO> getCoursesByName(String name) {
         List<Course> courses = courseRepository.findByNameContainingIgnoreCase(name);
