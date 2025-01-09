@@ -1,4 +1,4 @@
-package com.certTrack.Course_Service;
+package com.certTrack.CourseService;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

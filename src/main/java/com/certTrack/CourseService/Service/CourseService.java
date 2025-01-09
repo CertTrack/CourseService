@@ -84,5 +84,13 @@ public class CourseService {
         Course course = new Course(dto.getName(), dto.getDescription(), category, dto.getModule());
         courseRepository.save(course);
     }
+
+	public String deleteCourse(int id) {
+		if(courseRepository.findById(id).isPresent()) {
+			courseRepository.deleteById(id);
+			return "course succesfully deleted";
+		}
+		return "no course by this id";
+	}
     
 }

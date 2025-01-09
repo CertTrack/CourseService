@@ -45,8 +45,6 @@ public class CourseDTO {
 		this.module=module;
 	}
 	public CourseDTO() {
-		super();
-		// TODO Auto-generated constructor stub
 	}
 	
 }
