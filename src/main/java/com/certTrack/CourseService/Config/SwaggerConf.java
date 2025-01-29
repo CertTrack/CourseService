@@ -21,8 +21,8 @@ public class SwaggerConf {
 	@Bean
 	public OpenAPI customOpenAPI() {
 	    return new OpenAPI()
-	        .info(new Info().title("UserService API").version("1.0")
-	            .description("UserService Documentation by using Swagger")
+	        .info(new Info().title("CourseService API").version("1.0")
+	            .description("CourseService Documentation by using Swagger")
 	            .contact(new Contact().name("Dmytro Trofimov")
 	                .email("dima6836753@gmail.com"))
 	            .license(new License().name("Apache 2.0").url("http://springdoc.org")))
