@@ -13,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.certTrack.CourseService.DTO.CourseDTO;
@@ -46,7 +45,7 @@ class CourseControllerTest {
 	@WithMockUser
 	@Test
 	public void AuthorizedUserCanSeeCoursesById() throws Exception{
-		 CourseDTO courseDTO = new CourseDTO(1, "java for beginers", "this course is for beginers witch wont to start learn java","Java", 10);
+		 CourseDTO courseDTO = new CourseDTO(1, "java for beginers", "The course for developers witch want to start learning java","Java", 10);
 		 String responseJson = objectMapper.writeValueAsString(courseDTO);
 		 api.perform(get("/courses/id?id=1")
 	            .contentType(MediaType.APPLICATION_JSON))
@@ -87,7 +86,7 @@ class CourseControllerTest {
 	            .andExpect(content().json(responseJson));
 	}
 	
-	@WithMockUser(roles = "ADMIN")
+	@WithMockUser(auth = "ROLE_ADMIN")
 	@Test
 	public void AdminCanDeleteCourses() throws Exception{
 		 ResponseMessage message = new ResponseMessage("no course by this id");
