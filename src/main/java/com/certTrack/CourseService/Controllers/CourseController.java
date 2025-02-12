@@ -48,11 +48,20 @@ public class CourseController {
         return courseService.getCourses();
     }
     
-    @PostMapping("/addModule")
-    public ResponseEntity<?> createCourses(@RequestParam Integer courseId,
-    									@RequestParam List<String> links,
+    @PostMapping("/createCourse")
+    public ResponseEntity<?> createCourses(@RequestParam String courseName,
+    									@RequestParam String courseDescription,
+    									@RequestParam MultipartFile zipModule,
     									@RequestParam int authorId) {
-        return courseService.addModule(courseId, links, authorId);
+        return courseService.createCourse(courseName, courseDescription, zipModule, authorId);
+    }
+    
+    
+    @PostMapping("/addModule")
+    public ResponseEntity<?> addModule(@RequestParam int courseId,
+    									@RequestParam MultipartFile zipModule,
+    									@RequestParam int authorId) {
+        return courseService.addModule(courseId, zipModule, authorId);
     }
     
     @DeleteMapping("/admin/delete")
