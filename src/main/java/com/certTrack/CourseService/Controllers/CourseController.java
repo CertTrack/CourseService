@@ -2,18 +2,19 @@ package com.certTrack.CourseService.Controllers;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.certTrack.CourseService.DTO.CourseDTO;
-import com.certTrack.CourseService.DTO.ResponseMessage;
+import com.certTrack.CourseService.Entity.Course;
+import com.certTrack.CourseService.Security.UserPrincipal;
 import com.certTrack.CourseService.Service.CourseService;
 
 import lombok.RequiredArgsConstructor;
@@ -23,49 +24,46 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CourseController {
 
-    private final CourseService courseService;
-    
-    @GetMapping("/id")
-    public CourseDTO getCoursesByName(@RequestParam int id) {
-    	return courseService.getCourseById(id);
-    }
+	private final CourseService courseService;
 
-//    @GetMapping("/name")
-//    public List<CourseDTO> getCoursesByName(@RequestParam String name) {
-//        return courseService.getCoursesByName(name);
-//    } 
-//    
-//
-//    @GetMapping("/category")
-//    public List<CourseDTO> getCoursesByCategory(@RequestParam String category) {
-//        return courseService.getCoursesByCategory(category);
-//    }
+	@GetMapping("/id")
+	public Course getCoursesByName(@RequestParam int id) {
+		return courseService.getCourseById(id);
+	}
 
-    
-    
-    @GetMapping("/")
-    public List<CourseDTO> getAllCourses() {
-        return courseService.getCourses();
-    }
-    
-    @PostMapping("/createCourse")
-    public ResponseEntity<?> createCourses(@RequestParam String courseName,
-    									@RequestParam String courseDescription,
-    									@RequestParam MultipartFile zipModule,
-    									@RequestParam int authorId) {
-        return courseService.createCourse(courseName, courseDescription, zipModule, authorId);
-    }
-    
-    
-    @PostMapping("/addModule")
-    public ResponseEntity<?> addModule(@RequestParam int courseId,
-    									@RequestParam MultipartFile zipModule,
-    									@RequestParam int authorId) {
-        return courseService.addModule(courseId, zipModule, authorId);
-    }
-    
-    @DeleteMapping("/admin/delete")
-    public ResponseEntity<?> deleteCourses(@RequestParam int id) {
-        return courseService.deleteCourse(id);
-    }
+	@GetMapping("/name")
+	public List<Course> getCoursesByName(@RequestParam String name) {
+		return courseService.getCoursesByName(name);
+	}
+
+	@GetMapping("/category")
+	public List<Course> getCoursesByCategory(@RequestParam String category) {
+		return courseService.getCoursesByCategory(category);
+	}
+
+	@GetMapping("/")
+	public List<Course> getAllCourses() {
+		return courseService.getCourses();
+	}
+
+	@PostMapping("/createCourse")
+	public ResponseEntity<?> createCourses(@AuthenticationPrincipal UserPrincipal principal, @RequestParam String courseName, @RequestParam String courseDescription,
+			@RequestParam MultipartFile zipModule) {
+		return courseService.createCourse(courseName, courseDescription, zipModule, principal.getUserId());
+	}
+
+	@PostMapping("/addModule")
+	public ResponseEntity<?> addModule(@AuthenticationPrincipal UserPrincipal principal, @RequestParam int courseId,
+			@RequestParam MultipartFile zipModule) {
+		ResponseEntity<?> validationResponse = courseService.validateZIP(zipModule);
+		if (validationResponse.getStatusCode() != HttpStatus.OK) {
+			return validationResponse;
+		}
+		return courseService.addModule(principal, courseId, zipModule);
+	}
+
+	@DeleteMapping("/admin/delete")
+	public ResponseEntity<?> deleteCourses(@RequestParam int id) {
+		return courseService.deleteCourse(id);
+	}
 }

@@ -5,24 +5,25 @@ import java.util.List;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 //@Entity
 //@Table(name="course")
 @AllArgsConstructor
+@NoArgsConstructor
 @Document(collection = "courses")
 @Data
 public class Course {
 	
-	//	@Id
-//	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@JsonIgnore
 	private int id;
 	private String name;
 	private int authorId;
 	private String description;
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "category_id", nullable = false)
     private String category;
     private List<String> modules;
     
