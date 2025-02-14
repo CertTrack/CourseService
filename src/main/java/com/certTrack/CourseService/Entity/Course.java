@@ -3,6 +3,8 @@ package com.certTrack.CourseService.Entity;
 
 import java.util.List;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -19,7 +21,13 @@ import lombok.NoArgsConstructor;
 @Data
 public class Course {
 	
+	
+	
+
+    @Transient
+    public static final String SEQUENCE_NAME = "course_sequence";
 	@JsonIgnore
+	@Id
 	private int id;
 	private String name;
 	private int authorId;

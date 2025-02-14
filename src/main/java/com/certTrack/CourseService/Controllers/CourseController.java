@@ -2,6 +2,7 @@ package com.certTrack.CourseService.Controllers;
 
 import java.util.List;
 
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CourseController {
 
+	//getModule
+	
 	private final CourseService courseService;
 
 	@GetMapping("/id")
@@ -31,6 +34,17 @@ public class CourseController {
 		return courseService.getCourseById(id);
 	}
 
+	@GetMapping("/id")
+	public ResponseEntity<ByteArrayResource> getCoursesByName(@RequestParam int courseId, @RequestParam int moduleId) {
+		byte[] data = courseService.getModule(courseId, moduleId);
+    	ByteArrayResource arrayResource = new ByteArrayResource(data);
+    	return ResponseEntity
+    			.ok()
+    			.contentLength(data.length)
+    			.header("Content-type", "application/octet-stream")
+    			.header("Content-disposition", "attachment; filename=\""+"module.pdf"+"\"")
+    			.body(arrayResource);
+	}
 	@GetMapping("/name")
 	public List<Course> getCoursesByName(@RequestParam String name) {
 		return courseService.getCoursesByName(name);
