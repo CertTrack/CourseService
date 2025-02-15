@@ -61,36 +61,11 @@ public class CourseService {
 	    return courseRepository.findById(id)
 	            .orElseThrow(() -> new NotFoundException("Course not found with id:" + id));
 	}
-	/*
-	 * 	public byte[] findByUserIdAndCourseId(int userId, int courseId) {
-		Certification cert = certificationRepository.findByUserIdAndCourseId(userId, courseId).getFirst();
-		S3Object object = amazonS3.getObject(bucket, cert.getFilePath());
-		S3ObjectInputStream inputStream = object.getObjectContent();
-		try {
-			byte[] content = IOUtils.toByteArray(inputStream);
-			return content;
-		}catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	 */
-	/*
-	 *     public ResponseEntity<ByteArrayResource> getCertificatesByUserIdAndCourseId(@RequestParam int userId, @RequestParam int courseId) {
-    	byte[] data = certificationService.findByUserIdAndCourseId(userId, courseId);
-    	ByteArrayResource arrayResource = new ByteArrayResource(data);
-    	return ResponseEntity
-    			.ok()
-    			.contentLength(data.length)
-    			.header("Content-type", "application/octet-stream")
-    			.header("Content-disposition", "attachment; filename=\""+"certificate.pdf"+"\"")
-    			.body(arrayResource);
-    } 
-	 */
+
 	public byte[] getModule(int courseId, int moduleId) {
 	    Course course = courseRepository.findById(courseId)
 	            .orElseThrow(() -> new NotFoundException("Course not found with id:" + courseId));
-		S3Object object = amazonS3.getObject(bucket, course.getModules().get(moduleId));
+		S3Object object = amazonS3.getObject(bucket, course.getModules().get(moduleId-1));
 		S3ObjectInputStream inputStream = object.getObjectContent();
 		try {
 			byte[] content = IOUtils.toByteArray(inputStream);
@@ -123,8 +98,9 @@ public class CourseService {
 
 		int courseId = this.generateSequence(Course.SEQUENCE_NAME);
 		String fileName = uploadFile(zipModule, courseId, authorId);
-
-		courseRepository.save(new Course(courseName, authorId, courseDescription, "Java", List.of(fileName)));
+		Course course = new Course(courseId, courseName, authorId, courseDescription, "Java", List.of(fileName));
+		
+		courseRepository.save(course);
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseMessage("Successfully created"));
 	}
 

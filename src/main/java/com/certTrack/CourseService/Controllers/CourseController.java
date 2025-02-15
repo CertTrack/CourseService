@@ -25,8 +25,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CourseController {
 
-	//getModule
-	
 	private final CourseService courseService;
 
 	@GetMapping("/id")
@@ -34,15 +32,15 @@ public class CourseController {
 		return courseService.getCourseById(id);
 	}
 
-	@GetMapping("/id")
-	public ResponseEntity<ByteArrayResource> getCoursesByName(@RequestParam int courseId, @RequestParam int moduleId) {
+	@GetMapping("/downloadModule")
+	public ResponseEntity<ByteArrayResource> downloadModule(@RequestParam int courseId, @RequestParam int moduleId) {
 		byte[] data = courseService.getModule(courseId, moduleId);
     	ByteArrayResource arrayResource = new ByteArrayResource(data);
     	return ResponseEntity
     			.ok()
     			.contentLength(data.length)
     			.header("Content-type", "application/octet-stream")
-    			.header("Content-disposition", "attachment; filename=\""+"module.pdf"+"\"")
+    			.header("Content-disposition", "attachment; filename=\""+"module" + moduleId + ".pdf"+"\"")
     			.body(arrayResource);
 	}
 	@GetMapping("/name")
@@ -63,6 +61,10 @@ public class CourseController {
 	@PostMapping("/createCourse")
 	public ResponseEntity<?> createCourses(@AuthenticationPrincipal UserPrincipal principal, @RequestParam String courseName, @RequestParam String courseDescription,
 			@RequestParam MultipartFile zipModule) {
+		ResponseEntity<?> validationResponse = courseService.validateZIP(zipModule);
+		if (validationResponse.getStatusCode() != HttpStatus.OK) {
+			return validationResponse;
+		}
 		return courseService.createCourse(courseName, courseDescription, zipModule, principal.getUserId());
 	}
 
