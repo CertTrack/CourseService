@@ -18,4 +18,8 @@ public interface CourseRepository extends MongoRepository<Course, Integer> {
     @Query("{'category' : {$exists: true}}")
     List<Course> findAllWithCategories();
     
+    @Query("{ '_id': { $ne: 'course_sequence' } }")
+    List<Course> findAllCourses();
+
+    
 }

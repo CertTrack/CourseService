@@ -14,9 +14,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,32 +55,35 @@ public class CourseService {
 	}
 
 	public List<Course> getCourses() {
-		List<Course> courses = courseRepository.findAll();
-		return courses;
+		return courseRepository.findAllCourses();
 	}
 
 	public Course getCourseById(int id) {
-	    return courseRepository.findById(id)
-	            .orElseThrow(() -> new NotFoundException("Course not found with id:" + id));
+		return courseRepository.findById(id).orElseThrow(() -> new NotFoundException("Course not found with id:" + id));
 	}
 
-	public byte[] getModule(int courseId, int moduleId) {
-	    Course course = courseRepository.findById(courseId)
-	            .orElseThrow(() -> new NotFoundException("Course not found with id:" + courseId));
-		S3Object object = amazonS3.getObject(bucket, course.getModules().get(moduleId-1));
-		S3ObjectInputStream inputStream = object.getObjectContent();
-		try {
-			byte[] content = IOUtils.toByteArray(inputStream);
-			return content;
-		}catch (IOException e) {
-			e.printStackTrace();
+	public ResponseEntity<?> getModule(int courseId, int moduleId) {
+		Course course = courseRepository.findById(courseId).orElse(null);
+		if (course == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(new ResponseMessage("This module is not available."));
 		}
-		return null;
+		try {
+			S3Object object = amazonS3.getObject(bucket, course.getModules().get(moduleId - 1));
+			S3ObjectInputStream inputStream = object.getObjectContent();
+			byte[] content = IOUtils.toByteArray(inputStream);
+			ByteArrayResource arrayResource = new ByteArrayResource(content);
+			return ResponseEntity.ok().contentLength(content.length).header("Content-type", "application/octet-stream")
+					.header("Content-disposition", "attachment; filename=\"" + "module" + moduleId + ".pdf" + "\"")
+					.body(arrayResource);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(new ResponseMessage("This module is not available."));
+		}
 	}
 
 	public List<Course> getCoursesByName(String name) {
-		List<Course> courses = courseRepository.findByNameContainingIgnoreCase(name);
-		return courses;
+		return courseRepository.findByNameContainingIgnoreCase(name);
 	}
 
 	public List<Course> getCoursesByCategory(String categoryName) {
@@ -99,7 +104,7 @@ public class CourseService {
 		int courseId = this.generateSequence(Course.SEQUENCE_NAME);
 		String fileName = uploadFile(zipModule, courseId, authorId);
 		Course course = new Course(courseId, courseName, authorId, courseDescription, "Java", List.of(fileName));
-		
+
 		courseRepository.save(course);
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseMessage("Successfully created"));
 	}
@@ -122,42 +127,45 @@ public class CourseService {
 	}
 
 	public String uploadFile(MultipartFile zipModule, int courseId, int authorId) {
-	    byte[] fileBytes;
-	    try {
-	        fileBytes = zipModule.getBytes();
-	    } catch (IOException e) {
-	        throw new RuntimeException("Failed to read file bytes", e);
-	    }
+		byte[] fileBytes;
+		try {
+			fileBytes = zipModule.getBytes();
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to read file bytes", e);
+		}
 
-	    ByteArrayInputStream inputStream = new ByteArrayInputStream(fileBytes);
-	    ObjectMetadata metadata = new ObjectMetadata();
-	    metadata.setContentLength(fileBytes.length);
+		ByteArrayInputStream inputStream = new ByteArrayInputStream(fileBytes);
+		ObjectMetadata metadata = new ObjectMetadata();
+		metadata.setContentLength(fileBytes.length);
 
-	    String fileName = String.format("%d_%s_%d_%s", courseId, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm")), authorId, zipModule.getOriginalFilename());
-	    amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, metadata));
+		String fileName = String.format("%d_%s_%d_%s", courseId,
+				LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm")), authorId,
+				zipModule.getOriginalFilename());
+		amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, metadata));
 
-	    return fileName;
+		return fileName;
 	}
 
 	public ResponseEntity<?> validateZIP(MultipartFile zipModule) {
-	    if (!zipModule.getOriginalFilename().endsWith(".zip")) {
-	        return ResponseEntity.badRequest().body(new ResponseMessage("The file is not a zip archive"));
-	    }
+		if (!zipModule.getOriginalFilename().endsWith(".zip")) {
+			return ResponseEntity.badRequest().body(new ResponseMessage("The file is not a zip archive"));
+		}
 
-	    try (ZipInputStream zis = new ZipInputStream(zipModule.getInputStream())) {
-	        ZipEntry entry;
-	        while ((entry = zis.getNextEntry()) != null) {
-	            String fileName = entry.getName();
-	            if (!(fileName.endsWith(".pdf") || fileName.endsWith(".mp4"))) {
-	                return ResponseEntity.badRequest().body(new ResponseMessage("The archive contains prohibited files: " + fileName));
-	            }
-	        }
-	    } catch (IOException e) {
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseMessage("An error occurred while processing the file"));
-	    }
+		try (ZipInputStream zis = new ZipInputStream(zipModule.getInputStream())) {
+			ZipEntry entry;
+			while ((entry = zis.getNextEntry()) != null) {
+				String fileName = entry.getName();
+				if (!(fileName.endsWith(".pdf") || fileName.endsWith(".mp4"))) {
+					return ResponseEntity.badRequest()
+							.body(new ResponseMessage("The archive contains prohibited files: " + fileName));
+				}
+			}
+		} catch (IOException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseMessage("An error occurred while processing the file"));
+		}
 
-	    return ResponseEntity.ok(new ResponseMessage("The zip file is valid"));
+		return ResponseEntity.ok(new ResponseMessage("The zip file is valid"));
 	}
-
 
 }

@@ -33,15 +33,8 @@ public class CourseController {
 	}
 
 	@GetMapping("/downloadModule")
-	public ResponseEntity<ByteArrayResource> downloadModule(@RequestParam int courseId, @RequestParam int moduleId) {
-		byte[] data = courseService.getModule(courseId, moduleId);
-    	ByteArrayResource arrayResource = new ByteArrayResource(data);
-    	return ResponseEntity
-    			.ok()
-    			.contentLength(data.length)
-    			.header("Content-type", "application/octet-stream")
-    			.header("Content-disposition", "attachment; filename=\""+"module" + moduleId + ".pdf"+"\"")
-    			.body(arrayResource);
+	public ResponseEntity<?> downloadModule(@RequestParam int courseId, @RequestParam int moduleId) {
+		return courseService.getModule(courseId, moduleId);
 	}
 	@GetMapping("/name")
 	public List<Course> getCoursesByName(@RequestParam String name) {
